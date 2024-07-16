@@ -14,12 +14,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        
         self.pushButton.clicked.connect(self.load_vedio)
+        self.pushButton_2.clicked.connect(self.open_cam)
 
-        self.timer = QTimer()  # 定义定时器
+        self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_frame)
         self.frame = []
         self.camera = None
+        self.process_falg = 0
 
     def load_vedio(self):
         options = QFileDialog.Options()
@@ -27,15 +30,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         file_name, _ = QFileDialog.getOpenFileName(self, "Open", "", "*.mp4;;*.avi;;All Files(*)", options=options)
         if file_name:
             self.camera = cv2.VideoCapture(file_name)
-            self.timer.start(100)
+            self.process_falg = 1
+            self.timer.start(30)
 
             score = self.calculate_score(file_name)
             self.ScoreLabel.setText(str(score))
+    
+    def open_cam(self):
+        self.process_falg = 0
+        self.camera = cv2.VideoCapture(0)
 
+    
     def display_video_frame(self):
         ret, frame = self.camera.read()
         if ret:
-            new_frame = process_frame(frame)
+            new_frame = frame
+            if self.process_falg:
+                new_frame = process_frame(frame)
+            
             frame_rgb = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
             image = QImage(frame_rgb.data, frame_rgb.shape[1], frame_rgb.shape[0], QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(image)
