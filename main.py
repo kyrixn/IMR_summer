@@ -8,7 +8,7 @@ import cv2
 from PyQt5.QtCore import QTimer
 
 from demo import Ui_MainWindow
-from toolkit import
+from toolkit import process_frame
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -35,7 +35,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def display_video_frame(self):
         ret, frame = self.camera.read()
         if ret:
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            new_frame = process_frame(frame)
+            frame_rgb = cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB)
             image = QImage(frame_rgb.data, frame_rgb.shape[1], frame_rgb.shape[0], QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(image)
             scaled_pixmap = pixmap.scaled(self.PicLabel.size(), Qt.KeepAspectRatio)
