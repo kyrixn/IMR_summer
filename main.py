@@ -40,7 +40,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.process_falg = 0
         self.camera = cv2.VideoCapture(0)
 
-    
     def display_video_frame(self):
         ret, frame = self.camera.read()
         if ret:
