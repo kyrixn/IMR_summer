@@ -22,21 +22,32 @@ def read_json(file_path):
 def draw_skeleton(data):
     keypoints = data[0]['keypoints']
 
-    rotated_kp = [rotate_x(np.array(point), 0) for point in keypoints]
+    rotated_kp = np.array([rotate_x(np.array(point), 0) for point in keypoints])
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     for i, (x, y, z) in enumerate(rotated_kp):
-        ax.scatter(x, y, z, marker='o')
-        ax.text(x, y, z, f' {i}', color='blue', fontsize=7)
+        ax.scatter(x, y, z, marker='o',c = 'g', s =3.5)
 
         if connection[i] != -1:
             parent_index = connection[i]
             px, py, pz = rotated_kp[parent_index]
-        ax.plot([x, px], [y, py], [z, pz], 'gray')  
+            ax.plot([x, px], [y, py], [z, pz], 'red', linewidth = 0.75)  
 
     ax.view_init(elev=20, azim=50)
+
+    min_point = rotated_kp.min(axis=0)
+    max_point = rotated_kp.max(axis=0)
+    max_range = np.array([max_point[i] - min_point[i] for i in range(3)]).max() / 2.0
+
+    mid_x = (max_point[0] + min_point[0]) * 0.5
+    mid_y = (max_point[1] + min_point[1]) * 0.5
+    mid_z = (max_point[2] + min_point[2]) * 0.5
+
+    ax.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax.set_zlim(mid_z - max_range, mid_z + max_range)
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -46,5 +57,6 @@ def draw_skeleton(data):
     plt.show()
 
 if __name__ == "__main__":
-    dt = read_json("000000.jpg")
+    dt = read_json("000000.json")
+    print(dt)
     draw_skeleton(dt)
