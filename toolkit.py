@@ -65,6 +65,7 @@ def process_frame(frame):
         color = cv2.rotate(color, cv2.ROTATE_90_COUNTERCLOCKWISE)
         depth = cv2.rotate(depth, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
+        return color
         return np.hstack((
             color, cv2.applyColorMap(cv2.convertScaleAbs(depth, alpha=0.06), cv2.COLORMAP_JET)
             ))

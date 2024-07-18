@@ -10,6 +10,13 @@ from PyQt5.QtCore import QTimer
 from demo import Ui_MainWindow
 from toolkit import process_frame
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
+import matplotlib
+import matplotlib.cbook as cbook
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
