@@ -123,14 +123,14 @@
       <item row="0" column="1">
        <widget class="QGroupBox" name="skeleton_box">
         <property name="title">
-         <string>GroupBox</string>
+         <string>skeleton will be shown here</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QGroupBox" name="groupBox_2">
+       <widget class="QGroupBox" name="angle_plot">
         <property name="title">
-         <string>GroupBox</string>
+         <string>plot of arm angle:</string>
         </property>
        </widget>
       </item>

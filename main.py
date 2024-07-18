@@ -8,7 +8,7 @@ import cv2
 from PyQt5.QtCore import QTimer
 
 from demo import Ui_MainWindow
-from toolkit import process_frame
+from toolkit import process_frame, angle_track
 from track_pose import track_kp
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -23,7 +23,7 @@ import numpy as np
 class Skeleton_Plot(FigureCanvas):
     connection = [-1,0,1,2,0,4,5,0,7,8,9,8,11,12,8,14,15]
     
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=3, height=4, dpi = 50):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111, projection='3d')
         FigureCanvas.__init__(self, fig)
@@ -31,10 +31,10 @@ class Skeleton_Plot(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.axes.set_title('skeleton Plot')
-        self.axes.set_axis_off()
+        # self.axes.set_axis_off()
 
     def update_skeleton(self, kp):
-        self.axes.set_axis_off()
+        #self.axes.set_axis_off()
         for i, (x, y, z) in enumerate(kp):
             self.axes.scatter(x, y, z, marker='o',c = 'g', s =3.5)
 
@@ -58,6 +58,20 @@ class Skeleton_Plot(FigureCanvas):
             self.axes.set_xlabel('X'); self.axes.set_ylabel('Y'); self.axes.set_zlabel('Z')
             self.draw()
 
+class angle_Plot(FigureCanvas):
+    def __init__(self, parent=None, width=3, height=4, dpi=50):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        self.axes.set_title('arm track')
+
+    def show_angle(self, left, right):
+        self.axes.plot(left)
+        self.axes.plot(right)
+        self.draw()
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -75,6 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.all_kp = []
 
         self.add_plot()
+        self.add_angle_plot()
 
     def load_vedio(self):
         options = QFileDialog.Options()
@@ -86,6 +101,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # self.all_kp = track_kp(file_name, self.inferencer_3d)
             # test
             self.all_kp = np.load("array3d.npy")
+            [l_angle, r_angle] = angle_track(self.all_kp)
+            self.canvas2.show_angle(l_angle, r_angle)
 
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
@@ -120,9 +137,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PicLabel.setPixmap(pixmap)
 
     def add_plot(self):
-        self.canvas = Skeleton_Plot(self, width=5, height=4)
+        self.canvas = Skeleton_Plot(self, width=1, height=4)
         self.skeleton_out = QGridLayout(self.skeleton_box)
         self.skeleton_out.addWidget(self.canvas)
+
+    def add_angle_plot(self):
+        self.canvas2 = angle_Plot(self, width=1,height=4)
+        self.angle_out = QGridLayout(self.angle_plot)
+        self.angle_out.addWidget(self.canvas2)
 
     def calculate_score(self, file_name):
         # Dummy score calculation function
