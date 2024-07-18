@@ -17,6 +17,28 @@ from matplotlib.lines import Line2D
 import matplotlib
 import matplotlib.cbook as cbook
 
+import numpy as np
+
+from mmpose.apis import MMPoseInferencer
+
+class Skeleton_Plot(FigureCanvas):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111, projection='3d')
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        self.plot()
+
+    def plot(self):
+        # Example data for plotting
+        data = np.random.rand(10, 3)
+        x, y, z = data[:, 0], data[:, 1], data[:, 2]
+        self.axes.scatter(x, y, z, color='red')
+        self.axes.set_title('skeleton Plot')
+        self.draw()
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -31,6 +53,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera = None
         self.process_falg = 0
 
+        self.add_plot()
+
+        #load model:
+        
+
     def load_vedio(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
@@ -38,7 +65,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if file_name:
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
-            self.timer.start(30)
+            self.timer.start(50)
 
             score = self.calculate_score(file_name)
             self.ScoreLabel.setText(str(score))
@@ -63,6 +90,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def show_video(self, file_name):
         pixmap = QPixmap(file_name)
         self.PicLabel.setPixmap(pixmap)
+
+    def add_plot(self):
+        self.canvas = Skeleton_Plot(self, width=5, height=4)
+        self.skeleton_out = QGridLayout(self.skeleton_box)
+        self.skeleton_out.addWidget(self.canvas)
 
     def calculate_score(self, file_name):
         # Dummy score calculation function

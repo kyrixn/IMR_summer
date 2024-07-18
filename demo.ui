@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>974</width>
-    <height>584</height>
+    <width>1229</width>
+    <height>683</height>
    </rect>
   </property>
   <property name="font">
@@ -22,16 +22,9 @@
    <string>NIHSS upper limb test</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_main">
-      <item row="0" column="0" rowspan="2">
-       <widget class="QLabel" name="PicLabel">
-        <property name="text">
-         <string>Your picture will be shown here!</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="2">
        <spacer name="verticalSpacer">
         <property name="orientation">
@@ -44,6 +37,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>arm angle:</string>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2" rowspan="2">
        <layout class="QGridLayout" name="gridLayout">
@@ -100,14 +100,21 @@
         </item>
        </layout>
       </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="PicLabel">
+        <property name="text">
+         <string>Your picture will be shown here!</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="0">
-       <spacer name="horizontalSpacer_3">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>188</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -116,21 +123,14 @@
       <item row="0" column="1">
        <widget class="QGroupBox" name="skeleton_box">
         <property name="title">
-         <string>Gskeleton will be shown here</string>
+         <string>GroupBox</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="groupBox_2">
         <property name="title">
-         <string>change of angle</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>arm angle:</string>
+         <string>GroupBox</string>
         </property>
        </widget>
       </item>
@@ -143,7 +143,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>974</width>
+     <width>1229</width>
      <height>27</height>
     </rect>
    </property>
