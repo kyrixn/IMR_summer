@@ -9,6 +9,7 @@ from PyQt5.QtCore import QTimer
 
 from demo import Ui_MainWindow
 from toolkit import process_frame
+from track_pose import track_kp
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -19,9 +20,9 @@ import matplotlib.cbook as cbook
 
 import numpy as np
 
-from mmpose.apis import MMPoseInferencer
-
 class Skeleton_Plot(FigureCanvas):
+    connection = [-1,0,1,2,0,4,5,0,7,8,9,8,11,12,8,14,15]
+    
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111, projection='3d')
@@ -29,15 +30,34 @@ class Skeleton_Plot(FigureCanvas):
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        self.plot()
-
-    def plot(self):
-        # Example data for plotting
-        data = np.random.rand(10, 3)
-        x, y, z = data[:, 0], data[:, 1], data[:, 2]
-        self.axes.scatter(x, y, z, color='red')
         self.axes.set_title('skeleton Plot')
-        self.draw()
+        self.axes.set_axis_off()
+
+    def update_skeleton(self, kp):
+        self.axes.set_axis_off()
+        for i, (x, y, z) in enumerate(kp):
+            self.axes.scatter(x, y, z, marker='o',c = 'g', s =3.5)
+
+            if self.connection[i] != -1:
+                parent_index = self.connection[i]
+                px, py, pz = kp[parent_index]
+                self.axes.plot([x, px], [y, py], [z, pz], 'red', linewidth = 0.75)  
+
+            self.axes.view_init(elev=20, azim=50)
+
+            min_point = kp.min(axis=0);max_point = kp.max(axis=0)
+            max_range = np.array([max_point[i] - min_point[i] for i in range(3)]).max() / 2.0
+
+            mid_x = (max_point[0] + min_point[0]) * 0.5;mid_y = (max_point[1] + min_point[1]) * 0.5
+            mid_z = (max_point[2] + min_point[2]) * 0.5
+
+            self.axes.set_xlim(mid_x - max_range, mid_x + max_range)
+            self.axes.set_ylim(mid_y - max_range, mid_y + max_range)
+            self.axes.set_zlim(mid_z - max_range, mid_z + max_range)
+
+            self.axes.set_xlabel('X'); self.axes.set_ylabel('Y'); self.axes.set_zlabel('Z')
+            self.draw()
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -52,20 +72,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.frame = []
         self.camera = None
         self.process_falg = 0
+        self.all_kp = []
 
         self.add_plot()
-
-        #load model:
-        
 
     def load_vedio(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
         file_name, _ = QFileDialog.getOpenFileName(self, "Open", "", "*.mp4;;*.avi;;All Files(*)", options=options)
         if file_name:
+            self.all_kp = []
+            self.frame_cnt =0
+            # self.all_kp = track_kp(file_name, self.inferencer_3d)
+            # test
+            self.all_kp = np.load("array3d.npy")
+
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
-            self.timer.start(50)
+            self.timer.start(100)
 
             score = self.calculate_score(file_name)
             self.ScoreLabel.setText(str(score))
@@ -86,6 +110,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pixmap = QPixmap.fromImage(image)
             scaled_pixmap = pixmap.scaled(self.PicLabel.size(), Qt.KeepAspectRatio)
             self.PicLabel.setPixmap(scaled_pixmap)
+
+            self.canvas.update_skeleton(self.all_kp[self.frame_cnt])
+            print(self.frame_cnt)
+            self.frame_cnt += 1 
 
     def show_video(self, file_name):
         pixmap = QPixmap(file_name)

@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import pprint
 
 connection = [-1,0,1,2,0,4,5,0,7,8,9,8,11,12,8,14,15]
 
@@ -20,8 +21,14 @@ def read_json(file_path):
     return data
 
 def draw_skeleton(data):
+    allarr = []
     keypoints = data[0]['keypoints']
-
+    keypoints = np.array(keypoints)
+    allarr.append(keypoints)
+    allarr.append(keypoints)
+    all_arrays = np.array(allarr)
+    print(all_arrays[0])
+    
     rotated_kp = np.array([rotate_x(np.array(point), 0) for point in keypoints])
 
     fig = plt.figure()
@@ -58,5 +65,4 @@ def draw_skeleton(data):
 
 if __name__ == "__main__":
     dt = read_json("000000.json")
-    print(dt)
     draw_skeleton(dt)

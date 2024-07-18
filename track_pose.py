@@ -1,43 +1,46 @@
 import cv2
 import matplotlib.pyplot as plt
 from mmpose.apis import MMPoseInferencer
+import numpy as np
 
-# Initialize video capture
-cap = cv2.VideoCapture("Data/NIHSS_UpperLimbs/20240603/00000/")  # 0 is usually the default camera
+from toolkit import process_frame
 
-# Check if the webcam is opened correctly
-if not cap.isOpened():
-    raise OSError("Cannot open webcam")
+def track_kp(path, inferencer):
+    all_kp = []
+    
+    cap = cv2.VideoCapture(path)  # 0 is usually the default camera
 
-# instantiate the inferencer using the model alias
-inferencer = MMPoseInferencer(pose3d="human3d")
+    i =0
+    while True:
+        try:
+            ret, frame = cap.read()
+            if ret:
+                new_frame = process_frame(frame)
 
-while True:
-    try:
-        ret, frame = cap.read()
-        if ret:
-            result_generator = inferencer(frame, show=True)
-            result = next(result_generator)
+                result_generator = inferencer(new_frame, show=False)
+                result = next(result_generator)
 
-            keypoints = result["predictions"][0][0]["keypoints"]
-            print(keypoints)
+                keypoints = result["predictions"][0][0]["keypoints"]
+                keypoints = np.array(keypoints)
 
-            # plot keypoints in 3d
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            # Add plotting code here to visualize keypoints
-            for kp in keypoints:
-                ax.scatter(kp[0], kp[1], kp[2], c="r", marker="o")
+                all_kp.append(keypoints)
+            else:
+                print("Failed to capture frame")
+                break
+        except RuntimeError as e:
+            print("An error occurred", e)
 
-            ax.set_box_aspect([1, 1, 1])
+        i+=1
+        if i % 10 == 0:
+            print(str(i)+" frame completed")
 
-            plt.show()
-        else:
-            print("Failed to capture frame")
-            break
-    except RuntimeError as e:
-        print("An error occurred", e)
+    cap.release()
 
-# Release the video capture and close windows
-cap.release()
-cv2.destroyAllWindows()
+    return np.array(all_kp)
+
+if __name__ == "__main__":
+    inferencer_3d = MMPoseInferencer(pose3d="human3d")
+    path = "000.mp4"
+    res = track_kp(path, inferencer_3d)
+    res = np.round(res,3)
+    np.save('array3d.npy', res)
