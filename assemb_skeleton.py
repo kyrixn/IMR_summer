@@ -66,3 +66,36 @@ def draw_skeleton(data):
 if __name__ == "__main__":
     dt = read_json("000000.json")
     draw_skeleton(dt)
+
+def track_kp(path, inferencer):
+    all_kp = []
+    
+    cap = cv2.VideoCapture(path)  # 0 is usually the default camera
+
+    i =0
+    while True:
+        try:
+            ret, frame = cap.read()
+            if ret:
+                new_frame = process_frame(frame)
+
+                result_generator = inferencer(new_frame, show=False)
+                result = next(result_generator)
+
+                keypoints = result["predictions"][0][0]["keypoints"]
+                keypoints = np.array(keypoints)
+
+                all_kp.append(keypoints)
+            else:
+                print("Failed to capture frame")
+                break
+        except RuntimeError as e:
+            print("An error occurred", e)
+
+        i+=1
+        if i % 10 == 0:
+            print(str(i)+" frame completed")
+
+    cap.release()
+
+    return np.array(all_kp)

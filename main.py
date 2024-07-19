@@ -9,7 +9,7 @@ from PyQt5.QtCore import QTimer
 
 from demo import Ui_MainWindow
 from toolkit import process_frame, angle_track
-from track_pose import track_kp
+from track_pose import track_pose_2D
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas

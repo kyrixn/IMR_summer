@@ -52,36 +52,6 @@ def process_frame(frame):
 
         return color
 
-
-def test1():
-    dataroot = './NIHSS_UpperLimbs/'
-
-    label, sub_id = read_label(dataroot + 'labels.txt')
-
-    deom_id = 0
-    mp4 = glob(dataroot + '/*/{:05d}/*.mp4'.format(sub_id[deom_id]))[0]
-    left_arm_label, right_arm_label = label[deom_id][1], label[deom_id][2]
-    cap = cv2.VideoCapture(mp4)
-
-    intrinsic = read_intrinsics(mp4)
-
-    cv2.namedWindow("Color and Depth Image", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Color and Depth Image", 800, 600)
-    while True:
-        t0 = time.time()
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        show_image = process_frame(frame)
-        
-        cv2.imshow("Color and Depth Image", show_image)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cv2.destroyAllWindows()
-
 def fit_plane(points):
     A = np.c_[points[:, 0], points[:, 1], np.ones(points.shape[0])]
     C, _, _, _ = np.linalg.lstsq(A, points[:, 2], rcond=None)  # coefficients
@@ -97,7 +67,6 @@ def angle_between_vectors(v1, v2):
     cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
     angle = np.arccos(cos_angle)
     return np.degrees(angle)
-
 
 def calc_angle(kp):
     body_idx = [14,8,11,7,0,1,4]
@@ -134,18 +103,7 @@ def angle_track(all_kp):
     return [savgol_filter(left_out, 10, 2), savgol_filter(right_out, 10, 2)]
 
 if __name__ == "__main__":
-    arr = np.load("array3d.npy")
-    [l,r] = angle_track(arr)
-    print(l)
-    fig = plt.figure()
-    plt.plot(l)
-    plt.plot(r)
-    plt.show()
-
-
-
-
-
-
-
-
+    data = None
+    with open("000002.json", 'r') as file:
+        data = json.load(file)
+    print(extract_kp(data))
