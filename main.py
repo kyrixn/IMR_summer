@@ -19,6 +19,8 @@ import matplotlib
 import matplotlib.cbook as cbook
 
 import numpy as np
+from sktime.utils import mlflow_sktime
+import pandas as pd
 
 class angle_Plot(FigureCanvas):
     def __init__(self, parent=None, width=3, height=4, dpi=50):
@@ -55,12 +57,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_frame)
-        self.frame = []
         self.camera = None
         self.process_falg = 0
         self.all_kp = []
 
         self.add_angle_plot()
+
+        self.classifier = mlflow_sktime.load_model(model_uri="model")
 
     def load_vedio(self):
         options = QFileDialog.Options()
@@ -71,17 +74,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frame_cnt =0
             # self.all_kp = track_kp(file_name, self.inferencer_3d)
             # test
-            self.all_kp = np.load("array3d.npy")
+            self.all_kp = np.load("kp2.npy")
             #[l_angle, r_angle] = angle_track(self.all_kp)
             # test
-            self.r_angle = np.degrees(np.load('array1.npy')); self.l_angle = np.degrees(np.load('array2.npy'))
+            
+            self.r_angle = np.load('r2.npy'); self.l_angle = np.load('l2.npy')
 
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
             self.timer.start(50)
 
-            score = self.calculate_score(file_name)
-            self.ScoreLabel.setText(str(score))
+            score = self.calculate_score(self.r_angle, self.l_angle)
+            self.ScoreLabel.setText("[" + str(score) + "]")
     
     def open_cam(self):
         self.process_falg = 0
@@ -114,10 +118,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.angle_out = QGridLayout(self.angle_plot)
         self.angle_out.addWidget(self.canvas2)
 
-    def calculate_score(self, file_name):
-        # Dummy score calculation function
-        # Replace this with actual score calculation logic
-        return 0
+    def calculate_score(self, right, left):
+
+        df = pd.DataFrame({
+            'L': [pd.Series(left)],
+            'R': [pd.Series(right)]
+        })
+        res = self.classifier.predict(df.T)
+        return res[1]
 
     def display_angle(self,l,r):
         self.l_angle_label.setText(str(np.round(l,2))+"°")
