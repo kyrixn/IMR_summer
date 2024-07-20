@@ -28,10 +28,12 @@ class angle_Plot(FigureCanvas):
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-        self.axes.set_title('arm track')
+        self.axes.set_title('arm track',fontsize = 20)
+        self.axes.set_xlabel('frame', fontsize = 20)
+        self.axes.set_ylabel('Angle (degrees)', fontsize = 20)
 
-        self.left_line, = self.axes.plot([], [], label='Left')
-        self.right_line, = self.axes.plot([], [], label='Right')
+        self.left_line, = self.axes.plot([], [], label='Left Arm')
+        self.right_line, = self.axes.plot([], [], label='Right Arm')
         self.axes.set_ylim(-10, 100)
         self.axes.legend()
 
@@ -115,7 +117,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def calculate_score(self, file_name):
         # Dummy score calculation function
         # Replace this with actual score calculation logic
-        return 42
+        return 0
 
     def display_angle(self,l,r):
         self.l_angle_label.setText(str(np.round(l,2))+"°")
