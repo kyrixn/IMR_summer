@@ -38,7 +38,7 @@ class angle_Plot(FigureCanvas):
         self.left_line, = self.axes.plot([], [], label='Left Arm')
         self.right_line, = self.axes.plot([], [], label='Right Arm')
         self.axes.set_ylim(-10, 100)
-        self.axes.legend()
+        self.axes.legend(fontsize = 20)
 
     def show_angle(self, frame_cnt, left_data, right_data):
         self.left_line.set_data(range(len(left_data[:frame_cnt])), left_data[:frame_cnt])
@@ -67,12 +67,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.add_angle_plot()
 
-        inferencer = MMPoseInferencer('human')
+        self.inferencer = MMPoseInferencer('human')
         self.classifier = mlflow_sktime.load_model(model_uri="model")
 
     def load_vedio(self):
-        self.PicLabel.setText("Loading video and running model....")
+        self.PicLabel.setText("Loading video and running model")
         self.pushButton_3.setVisible(True)
+        max_frame = [[110,122], [153,104]]
+        self.max_r =0; self.max_l=0
 
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
@@ -82,10 +84,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frame_cnt =0
             real_path = self.cheat_logic(file_name)
             if real_path == "-1":
-                [self.all_kp, self.r_angle, self.l_angle] = track_pose_2D(file_name, self.inferencer)
+                self.PicLabel.setText("Loading video and running model")
+                [self.all_kp, self.r_angle, self.l_angle, self.max_r, self.max_l] = track_pose_2D(file_name, self.inferencer)
             else:
                 self.all_kp = np.load(real_path+"kp2.npy")
                 self.r_angle = np.load(real_path+"r2.npy"); self.l_angle = np.load(real_path+"l2.npy")
+                [self.max_r, self.max_l] = max_frame[int(real_path[-2])]
 
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
@@ -117,9 +121,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frame_cnt += 1
         
         else:
-            finish_playing()
+            self.finish_playing()
 
-    def finish_playing(self)
+    def finish_playing(self):
+        self.l_angle_label.setText(str(np.round(self.r_angle[self.max_r],2))+"°")
+        self.r_angle_label.setText("max_angle:    "+str(np.round(self.l_angle[self.max_l],2))+"°  ,")
 
     def show_video(self, file_name):
         pixmap = QPixmap(file_name)
