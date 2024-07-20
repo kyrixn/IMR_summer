@@ -56,6 +56,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton.clicked.connect(self.load_vedio)
         self.pushButton_2.clicked.connect(self.open_cam)
         self.pushButton_3.setVisible(False)
+        self.ScoreLabel.setVisible(False)
         self.pushButton_3.clicked.connect(self.toggle_pause_resume)
 
         self.timer = QTimer()
@@ -126,6 +127,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def finish_playing(self):
         self.l_angle_label.setText(str(np.round(self.r_angle[self.max_r],2))+"°")
         self.r_angle_label.setText("max_angle:    "+str(np.round(self.l_angle[self.max_l],2))+"°  ,")
+        self.ScoreLabel.setVisible(True)
 
     def show_video(self, file_name):
         pixmap = QPixmap(file_name)

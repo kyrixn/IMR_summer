@@ -172,6 +172,14 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <family>Times New Roman</family>
+            <pointsize>14</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -179,7 +187,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>NIHSS score</string>
+           <string>NIHSS score:</string>
           </property>
          </widget>
         </item>
