@@ -103,8 +103,7 @@ def track_pose_2D(path, inferencer):
     for angle in r_angle:
          filtered_r_angles.append(lpf.update(angle))
     
-    np.save('kp2.npy',np.array(all_kp))
-    return [filtered_r_angles, filtered_l_angles]
+    return [all_kp, filtered_r_angles, filtered_l_angles, np.argmax(r_angle), np.argmax(l_angle)]
 
 # function for visualization
 def draw_skeleton(data):
@@ -151,12 +150,14 @@ def read_json(file_path):
     return data[0]['keypoints']
 
 if __name__ == "__main__":
-    # inferencer = MMPoseInferencer('human')
-    # path = "001.mp4"
-    # [c,d] = track_pose_2D(path, inferencer)
-    # np.save('r2.npy', c); np.save('l2.npy', d)
+    inferencer = MMPoseInferencer('human')
+    path = "000.mp4"
+    [c,d,e,f] = track_pose_2D(path, inferencer)
+    #np.save('r2.npy', c); np.save('l2.npy', d)
     c = np.load("r1.npy")
     d = np.load("l1.npy")
+    print(e)
+    print(f)
     fig, ax = plt.subplots()
 
     ax.plot(c, label='Right Arm')

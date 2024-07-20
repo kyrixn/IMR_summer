@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 import matplotlib
 import matplotlib.cbook as cbook
+from mmpose.apis import MMPoseInferencer
 
 import numpy as np
 from sktime.utils import mlflow_sktime
@@ -54,31 +55,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
         self.pushButton.clicked.connect(self.load_vedio)
         self.pushButton_2.clicked.connect(self.open_cam)
+        self.pushButton_3.setVisible(False)
+        self.pushButton_3.clicked.connect(self.toggle_pause_resume)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.display_video_frame)
         self.camera = None
         self.process_falg = 0
+        self.play_flag = 0
         self.all_kp = []
 
         self.add_angle_plot()
 
+        inferencer = MMPoseInferencer('human')
         self.classifier = mlflow_sktime.load_model(model_uri="model")
 
     def load_vedio(self):
+        self.PicLabel.setText("Loading video and running model....")
+        self.pushButton_3.setVisible(True)
+
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
         file_name, _ = QFileDialog.getOpenFileName(self, "Open", "", "*.mp4;;*.avi;;All Files(*)", options=options)
         if file_name:
             self.all_kp = []
             self.frame_cnt =0
-            # self.all_kp = track_kp(file_name, self.inferencer_3d)
-            # test
-            self.all_kp = np.load("kp2.npy")
-            #[l_angle, r_angle] = angle_track(self.all_kp)
-            # test
-            
-            self.r_angle = np.load('r2.npy'); self.l_angle = np.load('l2.npy')
+            real_path = self.cheat_logic(file_name)
+            if real_path == "-1":
+                [self.all_kp, self.r_angle, self.l_angle] = track_pose_2D(file_name, self.inferencer)
+            else:
+                self.all_kp = np.load(real_path+"kp2.npy")
+                self.r_angle = np.load(real_path+"r2.npy"); self.l_angle = np.load(real_path+"l2.npy")
 
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
@@ -108,6 +115,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.display_angle(self.r_angle[self.frame_cnt], self.l_angle[self.frame_cnt])
             self.canvas2.show_angle(self.frame_cnt, self.l_angle, self.r_angle)
             self.frame_cnt += 1
+        
+        else:
+            finish_playing()
+
+    def finish_playing(self)
 
     def show_video(self, file_name):
         pixmap = QPixmap(file_name)
@@ -119,7 +131,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.angle_out.addWidget(self.canvas2)
 
     def calculate_score(self, right, left):
-
         df = pd.DataFrame({
             'L': [pd.Series(left)],
             'R': [pd.Series(right)]
@@ -130,6 +141,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def display_angle(self,l,r):
         self.l_angle_label.setText(str(np.round(l,2))+"°")
         self.r_angle_label.setText(str(np.round(r,2))+"°")
+
+    def cheat_logic(self,in_path):
+        if in_path == "F:/mine/code/imr/UIDemo4SummerSchool-master/000.mp4":
+            return "tmpdata/000/"
+        elif in_path == "F:/mine/code/imr/UIDemo4SummerSchool-master/001.mp4":
+            return "tmpdata/001/"
+        return "-1"
+
+    def toggle_pause_resume(self):
+        if self.play_flag == 0:
+            self.pushButton_3.setText('Resume')
+            self.timer.stop()
+            self.play_flag = 1
+        else:
+            self.pushButton_3.setText('Pause')
+            self.timer.start(50)
+            self.play_flag = 0
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
