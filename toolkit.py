@@ -52,42 +52,19 @@ def process_frame(frame):
 
         return color
 
-def fit_plane(points):
-    A = np.c_[points[:, 0], points[:, 1], np.ones(points.shape[0])]
-    C, _, _, _ = np.linalg.lstsq(A, points[:, 2], rcond=None)  # coefficients
-    normal = np.array([-C[0], -C[1], 1])
-    return normal / np.linalg.norm(normal)
+def draw_pic(frame, points):
+    connection = [[1,2],[0,2],[0,1],[2,4],[1,3],[3,5],[4,6],[5,6],[6,8],[8,10],[5,7],[7,9],
+                  [6,12],[5,11],[11,12],[12,14],[14,16],[11,13],[13,15]]
 
-def fit_line(points):
-    direction = points[-1] - points[0]
-    return direction / np.linalg.norm(direction)
+    for point in points:
+        cv2.circle(frame, (int(point[0]), int(point[1])), 5, (0, 255, 0), -1)
 
-# Calculate the angle between the two arm lines
-def angle_between_vectors(v1, v2):
-    cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-    angle = np.arccos(cos_angle)
-    return np.degrees(angle)
+    for connection in connection:
+        point1 = points[connection[0]]
+        point2 = points[connection[1]]
+        cv2.line(frame, (int(point1[0]), int(point1[1])), (int(point2[0]), int(point2[1])), (255, 0, 0), 2)
 
-def calc_angle(kp):
-    body_idx = [14,8,11,7,0,1,4]
-    left_arm_idx = [11,12,13]
-    right_arm_idx = [14,15,16]
-
-    body_points = kp[body_idx]
-    left_arm_points = kp[left_arm_idx]
-    right_arm_points = kp[right_arm_idx]
-    # Fit the plane to the body points
-    body_plane_normal = fit_plane(body_points)
-
-    left_arm_direction = fit_line(left_arm_points)
-    right_arm_direction = fit_line(right_arm_points)
-
-    left_arm_body_angle = angle_between_vectors(left_arm_direction, body_plane_normal)
-    right_arm_body_angle = angle_between_vectors(right_arm_direction, body_plane_normal)
-
-    #print(f"Angle between left arm line and body plane: {left_arm_body_angle:.2f} degrees")
-    #print(f"Angle between right arm line and body plane: {right_arm_body_angle:.2f} degrees")
-    return [left_arm_body_angle, right_arm_body_angle]
+    return frame
 
 def angle_track(all_kp):
     right_angle = []
@@ -102,8 +79,8 @@ def angle_track(all_kp):
 
     return [savgol_filter(left_out, 10, 2), savgol_filter(right_out, 10, 2)]
 
-if __name__ == "__main__":
-    data = None
-    with open("000002.json", 'r') as file:
-        data = json.load(file)
-    print(extract_kp(data))
+# if __name__ == "__main__":
+#     data = None
+#     with open("000002.json", 'r') as file:
+#         data = json.load(file)
+#     print(extract_kp(data))

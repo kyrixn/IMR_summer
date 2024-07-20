@@ -25,26 +25,6 @@
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_main">
-      <item row="0" column="2">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>arm angle:</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2" rowspan="2">
        <layout class="QGridLayout" name="gridLayout">
         <property name="spacing">
@@ -76,6 +56,13 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="2">
+         <widget class="QPushButton" name="pushButton_2">
+          <property name="text">
+           <string>open camera</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="1">
          <widget class="QLabel" name="ScoreLabel">
           <property name="font">
@@ -91,21 +78,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="pushButton_2">
-          <property name="text">
-           <string>open camera</string>
-          </property>
-         </widget>
-        </item>
        </layout>
-      </item>
-      <item row="0" column="0" rowspan="2">
-       <widget class="QLabel" name="PicLabel">
-        <property name="text">
-         <string>Your picture will be shown here!</string>
-        </property>
-       </widget>
       </item>
       <item row="2" column="0">
        <spacer name="horizontalSpacer">
@@ -114,25 +87,79 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>80</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
       </item>
       <item row="0" column="1">
-       <widget class="QGroupBox" name="skeleton_box">
-        <property name="title">
-         <string>skeleton will be shown here</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
        <widget class="QGroupBox" name="angle_plot">
         <property name="title">
          <string>plot of arm angle:</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="PicLabel">
+        <property name="text">
+         <string>Your picture will be shown here!</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>arm angle: (left, right)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="r_angle_label">
+          <property name="font">
+           <font>
+            <family>Times New Roman</family>
+            <pointsize>16</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="l_angle_label">
+          <property name="font">
+           <font>
+            <family>Times New Roman</family>
+            <pointsize>16</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>

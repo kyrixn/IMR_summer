@@ -4,7 +4,7 @@ from mmpose.apis import MMPoseInferencer
 import numpy as np
 import json
 
-from toolkit import process_frame
+from toolkit import process_frame, draw_pic
 from scipy.signal import savgol_filter
 
 def extract_kp(res):
@@ -86,6 +86,7 @@ def track_pose_2D(path, inferencer):
             ret, frame = cap.read()
             if ret:
                 keypoints = get_kp(frame, inferencer)
+                all_kp.append(np.array(keypoints))
 
                 [cur_r_ratio, cur_l_ratio, cur_r_angle, cur_l_angle] = get_arm_angle(keypoints, r_arm, l_arm)
                 r_ratio.append(cur_r_ratio);l_ratio.append(cur_l_ratio)
@@ -101,7 +102,8 @@ def track_pose_2D(path, inferencer):
             print(str(i)+" frame completed")
 
     cap.release()
-
+    
+    np.save('array3d.npy',np.array(all_kp))
     return [savgol_filter(r_ratio,5,2),savgol_filter(l_ratio,5,2),savgol_filter(r_angle,5,2),savgol_filter(l_angle,5,2)]
 
 # function for visualization
@@ -152,10 +154,10 @@ if __name__ == "__main__":
     inferencer = MMPoseInferencer('human')
     path = "000.mp4"
     [a,b,c,d] = track_pose_2D(path, inferencer)
-    # np.save('a1.npy',a)
-    # np.save('a2.npy',b)
-    # np.save('array1.npy',c)
-    # np.save('array2.npy',d)
+    np.save('a1.npy',a)
+    np.save('a2.npy',b)
+    np.save('array1.npy',c)
+    np.save('array2.npy',d)
     plt.plot(np.degrees(c))
     plt.plot(np.degrees(d))
     plt.show()
