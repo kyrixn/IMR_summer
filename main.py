@@ -30,10 +30,18 @@ class angle_Plot(FigureCanvas):
         FigureCanvas.updateGeometry(self)
         self.axes.set_title('arm track')
 
-    def show_angle(self, left, right):
-        self.axes.plot(left)
-        self.axes.plot(right)
+        self.left_line, = self.axes.plot([], [], label='Left')
+        self.right_line, = self.axes.plot([], [], label='Right')
+        self.axes.set_ylim(-10, 100)
+        self.axes.legend()
+
+    def show_angle(self, frame_cnt, left_data, right_data):
+        self.left_line.set_data(range(len(left_data[:frame_cnt])), left_data[:frame_cnt])
+        self.right_line.set_data(range(len(right_data[:frame_cnt])), right_data[:frame_cnt])
+        self.axes.relim(visible_only=True)
+        self.axes.autoscale_view(scalex=True, scaley=False)
         self.draw()
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -66,11 +74,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # test
             self.r_angle = np.degrees(np.load('array1.npy')); self.l_angle = np.degrees(np.load('array2.npy'))
 
-            self.canvas2.show_angle(np.degrees(self.l_angle), np.degrees(self.r_angle))
-
             self.camera = cv2.VideoCapture(file_name)
             self.process_falg = 1
-            self.timer.start(100)
+            self.timer.start(50)
 
             score = self.calculate_score(file_name)
             self.ScoreLabel.setText(str(score))
@@ -94,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PicLabel.setPixmap(scaled_pixmap)
 
             self.display_angle(self.r_angle[self.frame_cnt], self.l_angle[self.frame_cnt])
+            self.canvas2.show_angle(self.frame_cnt, self.l_angle, self.r_angle)
             self.frame_cnt += 1
 
     def show_video(self, file_name):
@@ -111,8 +118,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return 42
 
     def display_angle(self,l,r):
-        self.l_angle_label.setText(str(np.round(l,2)))
-        self.r_angle_label.setText(str(np.round(r,2)))
+        self.l_angle_label.setText(str(np.round(l,2))+"°")
+        self.r_angle_label.setText(str(np.round(r,2))+"°")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
