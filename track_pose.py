@@ -5,7 +5,11 @@ import numpy as np
 import json
 
 from toolkit import process_frame, draw_pic
-from scipy.signal import savgol_filter
+from lpf import LowPassFilter
+
+lpf = LowPassFilter(
+            sampling_frequency=30, damping_frequency=3, damping_intensity=0.5, outlier_threshold=60
+        )
 
 def extract_kp(res):
     highest_avg_score = -1
@@ -35,12 +39,12 @@ def get_arm_len(v_source, inferencer):
     l_arm = []
     cap = cv2.VideoCapture(v_source)
     frame_cnt = 0
-    while frame_cnt < 1:
+    while frame_cnt < 10:
         #ret = 1
         ret, frame = cap.read()
         if ret:
             cur_kp = get_kp(frame, inferencer)
-            cur_kp = read_json("000000.json")
+            #cur_kp = read_json("000000.json")
 
             r_arm.append(np.linalg.norm(np.array(cur_kp[6]) - np.array(cur_kp[10])))
             l_arm.append(np.linalg.norm(np.array(cur_kp[5]) - np.array(cur_kp[9])))
@@ -53,32 +57,23 @@ def get_arm_len(v_source, inferencer):
 
 def get_arm_angle(cur_kp, r_arm, l_arm):
 
-    cur_r_arm = (cur_kp[6][1] - cur_kp[10][1])/r_arm
-    if cur_r_arm < -1:
-        cur_r_arm = -1
-    elif cur_r_arm > 1:
-        cur_r_arm =1
-    cur_l_arm = (cur_kp[5][1] - cur_kp[9][1])/l_arm
-    if cur_l_arm < -1:
-        cur_l_arm = -1
-    elif cur_l_arm > 1:
-        cur_l_arm =1
+    def calc_angle(diff, arm_length):
+        arm_ratio = np.clip(diff / arm_length, -1, 1)  # Ensure the ratio is within [-1, 1]
+        angle = np.arccos(abs(arm_ratio))
+        return [arm_ratio, np.degrees(angle)]
 
-    r_angle = np.pi/2 - np.arcsin(abs(cur_r_arm))
-    if cur_r_arm > 0:
-        r_angle = np.pi/2 + np.arcsin(abs(cur_r_arm))
-    l_angle = np.pi/2 - np.arcsin(abs(cur_l_arm))
-    if cur_l_arm > 0:
-        l_angle = np.pi/2 + np.arcsin(abs(cur_l_arm))
+    # Calculate right and left arm ratios and angles
+    [cur_r_arm, r_angle] = calc_angle(cur_kp[6][1] - cur_kp[10][1], r_arm)
+    [cur_l_arm, l_angle] = calc_angle(cur_kp[5][1] - cur_kp[9][1], l_arm)
 
-    return [cur_r_arm, cur_l_arm, r_angle, l_angle]
+    return [r_angle, l_angle]
 
 def track_pose_2D(path, inferencer):
     all_kp = []
     cap = cv2.VideoCapture(path)
 
     [r_arm, l_arm] = get_arm_len(path, inferencer)
-    r_ratio=[]; l_ratio=[]; r_angle=[]; l_angle=[]
+    r_angle=[]; l_angle=[]
 
     i=0
     while True:
@@ -88,8 +83,7 @@ def track_pose_2D(path, inferencer):
                 keypoints = get_kp(frame, inferencer)
                 all_kp.append(np.array(keypoints))
 
-                [cur_r_ratio, cur_l_ratio, cur_r_angle, cur_l_angle] = get_arm_angle(keypoints, r_arm, l_arm)
-                r_ratio.append(cur_r_ratio);l_ratio.append(cur_l_ratio)
+                [cur_r_angle, cur_l_angle] = get_arm_angle(keypoints, r_arm, l_arm)
                 r_angle.append(cur_r_angle);l_angle.append(cur_l_angle)
             else:
                 print("Failed to capture frame")
@@ -104,7 +98,7 @@ def track_pose_2D(path, inferencer):
     cap.release()
     
     np.save('array3d.npy',np.array(all_kp))
-    return [savgol_filter(r_ratio,5,2),savgol_filter(l_ratio,5,2),savgol_filter(r_angle,5,2),savgol_filter(l_angle,5,2)]
+    return 
 
 # function for visualization
 def draw_skeleton(data):
@@ -152,12 +146,17 @@ def read_json(file_path):
 
 if __name__ == "__main__":
     inferencer = MMPoseInferencer('human')
-    path = "000.mp4"
+    path = "001.mp4"
     [a,b,c,d] = track_pose_2D(path, inferencer)
-    np.save('a1.npy',a)
-    np.save('a2.npy',b)
-    np.save('array1.npy',c)
-    np.save('array2.npy',d)
-    plt.plot(np.degrees(c))
-    plt.plot(np.degrees(d))
+    np.save('array1.npy', c); np.save('array2.npy', d)
+    fig, ax = plt.subplots()
+
+    ax.plot(c, label='Right Arm')
+    ax.plot(d, label='Left Arm')
+
+    ax.set_title('Arm Track', fontsize=20)
+    ax.set_xlabel('frame', fontsize=20)
+    ax.set_ylabel('Angle (degrees)', fontsize=20)
+
+    ax.legend(fontsize=16)
     plt.show()
