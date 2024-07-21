@@ -76,6 +76,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_3.setVisible(True)
         max_frame = [[110,122], [153,104]]
         self.max_r =0; self.max_l=0
+        self.ScoreLabel.setVisible(False)
 
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def display_video_frame(self):
         ret, frame = self.camera.read()
         if ret:
+            self.ScoreLabel.setVisible(False)
             new_frame = frame
             if self.process_falg:
                 new_frame = process_frame(frame)
